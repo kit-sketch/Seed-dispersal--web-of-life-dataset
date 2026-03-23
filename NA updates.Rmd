@@ -76,7 +76,7 @@ merged_wide[is.na(merged_wide)] <- 0
 
 
 
-plotweb(merged_wide , horizontal = TRUE, spacing = 0.7, text_size = 0.5, sorting = "ca", scaling = "relative", curved_links = TRUE, higher_color = "maroon", lower_color = "maroon", link_color = "pink", link_alpha = 0.6, lower_border = "black", higher_border = "black")
+plotweb(merged_wide , horizontal = TRUE, spacing = 0.8, text_size = 0.5, sorting = "ca", scaling = "relative", curved_links = TRUE, higher_color = "maroon", lower_color = "maroon", link_color = "pink", link_alpha = 0.6, lower_border = "black", higher_border = "black")
 
 
 ```
