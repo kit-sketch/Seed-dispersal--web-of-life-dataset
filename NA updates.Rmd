@@ -1,0 +1,87 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+
+
+```{r}
+# Set the folder path
+folder_path <- "web-of-life_2026-03-18_071546"
+file_names <- c("M_SD_003.csv", "M_SD_004.csv", "M_SD_005.csv", "M_SD_006.csv")
+
+# Read all files and store them in a list
+all_networks <- list()
+for(file in file_names) {
+  name <- gsub(".csv", "", file)
+  all_networks[[name]] <- read.csv(file.path(folder_path, file))
+  
+  # Print dimensions to check
+  cat(name, "dimensions:", dim(all_networks[[name]]), "\n")
+}
+
+# Method 1: Using dplyr and tidyr (recommended)
+library(dplyr)
+library(tidyr)
+
+# Convert each network to long format and combine
+combined_long <- data.frame()
+
+for(network_name in names(all_networks)) {
+  df <- all_networks[[network_name]]
+  
+  # Get plant names from first column (assuming it's named 'X' or similar)
+  plant_col <- names(df)[1]  # First column name (likely 'X')
+  
+  # Convert to long format
+  df_long <- df %>%
+    pivot_longer(cols = -all_of(plant_col),  # All columns except plant column
+                 names_to = "bird_species",
+                 values_to = "interaction") %>%
+    rename(plant_species = all_of(plant_col)) %>%
+    mutate(network = network_name)
+  
+  # Combine with main dataframe
+  combined_long <- bind_rows(combined_long, df_long)
+}
+
+# Sum interactions by plant and bird species
+merged_data <- combined_long %>%
+  group_by(plant_species, bird_species) %>%
+  summarise(interaction = sum(interaction, na.rm = TRUE), .groups = "drop")
+
+# Convert back to wide format (plants as rows, birds as columns)
+merged_wide <- merged_data %>%
+  pivot_wider(names_from = bird_species,
+              values_from = interaction,
+              values_fill = NA)  # Use NA for missing combinations
+
+# View the merged data
+print("Merged data dimensions:")
+dim(merged_wide)
+print(head(merged_wide, 10))
+
+
+```
+
+```{r}
+library(bipartite)
+set.seed(123)
+
+merged_wide <- as.data.frame(merged_wide)
+rownames(merged_wide) <- merged_wide[, 1]
+merged_wide <- merged_wide[, -1]
+
+merged_wide[is.na(merged_wide)] <- 0
+
+
+
+plotweb(merged_wide , horizontal = TRUE, spacing = 0.7, text_size = 0.5, sorting = "ca", scaling = "relative", curved_links = TRUE, higher_color = "maroon", lower_color = "maroon", link_color = "pink", link_alpha = 0.6, lower_border = "black", higher_border = "black")
+
+
+```
+
+
+
+
+
