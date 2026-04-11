@@ -81,7 +81,14 @@ plotweb(merged_wide , horizontal = TRUE, spacing = 0.8, text_size = 0.5, sorting
 
 ```
 
+Basic Stiatistics
+```{r}
+n_plants <- dim(merged_wide)[1]  #number of plant species
+n_birds <- dim(merged_wide)[2] #number of birds species
+s <- n_plants + n_birds #total number of species
+n_inter <- sum(merged_wide) #total number of interactions
 
+```
 
 
 
