@@ -199,6 +199,8 @@ module_df <- data.frame(
 
 head(module_df)
 split(module_df$species, module_df$module)
+
+length(unique(membership))
 ```
 From here we see that the species interactions can be divided into 7 modules.
 
@@ -221,69 +223,13 @@ tg <- as_tbl_graph(g) %>%
   )
 
 ggraph(tg, layout = "fr") +
-  geom_edge_link(alpha = 0.2, colour = "grey80") +
+  geom_edge_link(alpha = 0.2, colour = "black") +
   geom_node_point(aes(size = deg, color = as.factor(membership))) +
   scale_size(range = c(2, 8)) +
   scale_color_brewer(palette = "Dark2") +
   theme_void()
 ```
 **Figure 3:** To visualize the 7 modules.
-
-## Bipartite graph for the different modules
-```{r}
-set.seed(123)
-
-# create graph
-edges <- as.data.frame(web) %>%
-  tibble::rownames_to_column("Plant") %>%
-  pivot_longer(-Plant, names_to = "Bird", values_to = "Count") %>%
-  filter(Count > 0)
-
-library(igraph)
-g <- graph_from_data_frame(edges, directed = FALSE)
-
-# assign weights
-E(g)$weight <- edges$Count
-
-# assign node type (IMPORTANT for bipartite layout)
-V(g)$type <- V(g)$name %in% rownames(web)
-
-# detect modules
-comm <- cluster_fast_greedy(g)
-membership <- membership(comm)
-
-tg <- tg %>%
-  mutate(
-    module = as.factor(membership),
-    type = ifelse(name %in% rownames(web), TRUE, FALSE)
-  ) %>%
-  arrange(type, module)
-table(tg$type, useNA = "always")
-layout <- create_layout(tg, layout = "bipartite")
-
-ggraph(layout) +
-  geom_edge_link(aes(width = weight),
-                 alpha = 0.25,
-                 colour = "grey70") +
-  
-  geom_node_point(aes(color = module),
-                  size = 2) +
-  
-  geom_node_text(
-    aes(label = name),
-    angle = 90,            # 🔥 vertical labels
-    hjust = 1,
-    size = 2,
-    check_overlap = TRUE   # avoids clutter
-  ) +
-  
-  scale_color_brewer(palette = "Dark2") +
-  scale_edge_width(range = c(0.2, 2)) +
-  
-  theme_void()
-```
-
-
 
 
 
@@ -302,7 +248,7 @@ tg <- as_tbl_graph(g) %>%
 ggraph(tg, layout = "fr") +
   geom_edge_link(aes(width = weight),
                  alpha = 0.3,
-                 colour = "grey60") +
+                 colour = "black") +
   
   geom_node_point(aes(size = deg,
                       color = type_label)) +
@@ -340,7 +286,7 @@ tg <- as_tbl_graph(g) %>%
 ggraph(tg, layout = "fr") +
   geom_edge_link(aes(width = weight),
                  alpha = 0.4,
-                 colour = "grey50") +
+                 colour = "black") +
   
   geom_node_point(aes(color = type_label),
                   size = 4) +   # fixed size as you wanted
@@ -360,6 +306,7 @@ ggraph(tg, layout = "fr") +
 
 ## Network level analyses
 ```{r}
+
 Network_analyses <- networklevel(merged_wide)
 Network_analyses <- data.frame(Network_analyses)
 ```
@@ -428,6 +375,7 @@ top_birds  <- birds[order(-birds$keystone_score), ][1:10, ]
 top_plants
 top_birds
 ```
+
 
 
 
